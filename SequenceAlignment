@@ -1,0 +1,49 @@
+from Bio import SeqIO
+from Bio import AlignIO
+from Bio.SeqIO import write
+
+
+#### shows the identifier ID only 
+fasta_file = '/Users/labuser3/Downloads/All_PR_ALigned.fasta'
+for record in SeqIO.parse(fasta_file, 'fasta'): 
+    print(f"ID: {record.id}")
+  
+## counting every line which was 3321   
+with open(fasta_file, 'r') as file:
+    line_count =sum(1 for line in file )
+print(f"{line_count}")
+
+
+## counted the numbers of sequences which was true including the reference: 1661
+identifier = sum( 1 for _ in SeqIO.parse(fasta_file, 'fasta'))
+print({identifier})
+
+
+print(f"Description: {record.description}")
+print(f"Sequence: {record.seq}\n")
+
+
+## Here I want to filter my alignment files and give it some criteria to choose from the alignment 
+input_file = "All_PR_ALigned.fasta"
+output_file = "filtered_sequences.fasta"
+
+criteria = [(91, "A"), (95, "T"), (102, "E"), (99, "M"), (227, "K")]
+
+
+alignment = AlignIO.read(input_file, "fasta")
+
+def sequence_meets_criteria(record, criteria):
+    for position, amino_acid in criteria:
+        if record.seq[position] != amino_acid:
+            return False
+    return True
+
+filtered_sequences = [record for record in alignment if sequence_meets_criteria(record, criteria)]
+
+with open(output_file, "w") as output_handle:
+    write(filtered_sequences, output_handle, "fasta")
+print(f"Filtered sequences saved to {output_file}")
+
+
+
+
