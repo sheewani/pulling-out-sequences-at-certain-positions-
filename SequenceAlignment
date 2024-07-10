@@ -1,49 +1,52 @@
 from Bio import SeqIO
-from Bio import AlignIO
-from Bio.SeqIO import write
 
+def filter_sequences_by_reference(input_file, output_file, reference_seq, position_amino_acid_dict):
+    """
+    Filters sequences based on specified positions and amino acids relative to a reference sequence.
 
-#### shows the identifier ID only 
-fasta_file = '/Users/labuser3/Downloads/All_PR_ALigned.fasta'
-for record in SeqIO.parse(fasta_file, 'fasta'): 
-    print(f"ID: {record.id}")
-  
-## counting every line which was 3321   
-with open(fasta_file, 'r') as file:
-    line_count =sum(1 for line in file )
-print(f"{line_count}")
+    """
+    filtered_sequences = []
+    
+   
+    for record in SeqIO.parse(input_file, "fasta"):
+        sequence = str(record.seq)
+        print(f"Processing sequence {record.id} of length {len(sequence)}")  # Debug print
+        
+        keep = True
+        
+        # Check if the sequence meets the criteria
+        for pos, amino_acid in position_amino_acid_dict.items():
+            if pos-1 >= len(sequence):
+                print(f"Position {pos} is out of range for sequence {record.id} with length {len(sequence)}")
+                keep = False
+                break
+            if sequence[pos-1] != amino_acid:
+                print(f"Sequence {record.id} does not meet the criteria at position {pos}")
+                print(f"Expected {amino_acid} but found {sequence[pos-1]} at position {pos}")
+                keep = False
+                break
+        
+        if keep:
+            print(f"Sequence {record.id} meets all criteria")
+            filtered_sequences.append(record)
+    
+    # Write the filtered sequences to the output file
+    SeqIO.write(filtered_sequences, output_file, "fasta")
+    print(f"Filtered sequences have been saved to {output_file}")
+    print(f"Total filtered sequences: {len(filtered_sequences)}")
 
-
-## counted the numbers of sequences which was true including the reference: 1661
-identifier = sum( 1 for _ in SeqIO.parse(fasta_file, 'fasta'))
-print({identifier})
-
-
-print(f"Description: {record.description}")
-print(f"Sequence: {record.seq}\n")
-
-
-## Here I want to filter my alignment files and give it some criteria to choose from the alignment 
+# Example usage
 input_file = "All_PR_ALigned.fasta"
 output_file = "filtered_sequences.fasta"
+reference_seq = "MKFLLQLLLLADPTKLDPSDYVGFTFFVGAMAMMAASAFFFLSLNQFNKKWRTSVLVSGLITFIAAVHYWYMRDYWFAIQESPTFFRYVDWVLTVPLMCVEFYLILKVAGAKPALMWKLIVFSVIMLVTGYFGEAVFQDQAALWGAISGAAYFYIVYEIWLGSAKKIAVAAGGDILKAHKILCWFVLVGWAIYPLGYMLGTDGWYTSILGKGSVDIAYNIADAINKIGFGLVIYALAVKKNEVEVV"  # Replace with your actual reference sequence
 
-criteria = [(91, "A"), (95, "T"), (102, "E"), (99, "M"), (227, "K")]
+# Given positions are 1-based, convert them accordingly
+position_amino_acid_dict = {
+    90: 'D',  # 91
+    94: 'T',  # 95
+    101: 'E',  # 102
+    98: 'M',  # 99
+    226: 'K'  # 227
+}
 
-
-alignment = AlignIO.read(input_file, "fasta")
-
-def sequence_meets_criteria(record, criteria):
-    for position, amino_acid in criteria:
-        if record.seq[position] != amino_acid:
-            return False
-    return True
-
-filtered_sequences = [record for record in alignment if sequence_meets_criteria(record, criteria)]
-
-with open(output_file, "w") as output_handle:
-    write(filtered_sequences, output_handle, "fasta")
-print(f"Filtered sequences saved to {output_file}")
-
-
-
-
+filter_sequences_by_reference(input_file, output_file, reference_seq, position_amino_acid_dict)
