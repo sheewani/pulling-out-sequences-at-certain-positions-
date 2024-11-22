@@ -30,13 +30,7 @@ def get_amino_acid_at_position(fasta_file, position):
     else:
         print(f"Position {position} is out of range for the first sequence.")
 
-# Usage
-#fasta_file = "/Users/labuser3/Downloads/All_PR_ALigned.fasta"  # Replace with the path to your FASTA file
 #position = 605  # 0-index based, so position 91 is index 90
-
-#get_amino_acid_at_position(fasta_file, position)
-#print(position)
-
 
 def filter_sequences(input_file, output_file, position_amino_acid_dict):
 
